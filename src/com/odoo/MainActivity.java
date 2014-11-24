@@ -37,10 +37,10 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.odoo.auth.OdooAccountManager;
@@ -74,7 +74,20 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		getActionBar().setIcon(R.drawable.ic_odoo_o);
+		if (findViewById(R.id.fragment_detail_container) != null) {
+			findViewById(R.id.fragment_detail_container).setVisibility(
+					View.GONE);
+			mTwoPane = true;
+		}
+		if (isTwoPane()) {
+			setSubToolBar((Toolbar) findViewById(R.id.toolbar));
+			setToolBar((Toolbar) findViewById(R.id.tablet_toolbar));
+			setTitle("");
+		} else {
+			setToolBar((Toolbar) findViewById(R.id.toolbar));
+		}
+		if (getToolBar() == null)
+			setActionBarIcon(R.drawable.ic_odoo_o);
 		mContext = this;
 		mFragment = getSupportFragmentManager();
 		if (OUser.current(mContext) != null && savedInstanceState == null) {
@@ -102,8 +115,9 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 		} else {
 			List<OUser> accounts = OdooAccountManager.fetchAllAccounts(this);
 			if (accounts.size() <= 0) {
-				getActionBar().setDisplayHomeAsUpEnabled(false);
-				getActionBar().setHomeButtonEnabled(false);
+				getActionbar().setDisplayHomeAsUpEnabled(false);
+				getActionbar().setDisplayShowTitleEnabled(false);
+				getActionbar().setHomeButtonEnabled(false);
 				initDrawerControls();
 				lockDrawer(true);
 				LoginSignup loginSignUp = new LoginSignup();
@@ -115,11 +129,6 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 	public void onTaskDone(Bundle savedInstanceState) {
 		initTouchListener();
 		initDrawerControls();
-		if (findViewById(R.id.fragment_detail_container) != null) {
-			findViewById(R.id.fragment_detail_container).setVisibility(
-					View.GONE);
-			mTwoPane = true;
-		}
 		if (savedInstanceState != null) {
 			return;
 		}
@@ -158,8 +167,9 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 			showUpgradeDialog();
 		} else {
 			if (!OdooAccountManager.hasAccounts(this) || isNewAccountRequest()) {
-				getActionBar().setDisplayHomeAsUpEnabled(false);
-				getActionBar().setHomeButtonEnabled(false);
+				getActionbar().setDisplayHomeAsUpEnabled(false);
+				getActionbar().setDisplayShowTitleEnabled(false);
+				getActionbar().setHomeButtonEnabled(false);
 				lockDrawer(true);
 				LoginSignup loginSignUp = new LoginSignup();
 				startMainFragment(loginSignUp, false);
@@ -237,8 +247,9 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						getActionBar().setDisplayHomeAsUpEnabled(false);
-						getActionBar().setHomeButtonEnabled(false);
+						getActionbar().setDisplayHomeAsUpEnabled(false);
+						getActionbar().setDisplayShowTitleEnabled(false);
+						getActionbar().setHomeButtonEnabled(false);
 						LoginSignup loginSignUp = new LoginSignup();
 						startMainFragment(loginSignUp, false);
 					}
@@ -274,7 +285,7 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 	public boolean onSettingItemSelected(SettingKeys key) {
 		switch (key) {
 		case GLOBAL_SETTING:
-			Intent i = new Intent(this, BaseSettings.class);
+			Intent i = new Intent(this, SettingActivity.class);
 			startActivityForResult(i, RESULT_SETTINGS);
 			return true;
 		case ACCOUNTS:
@@ -282,8 +293,10 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 			startMainFragment(acFragment, true);
 			return true;
 		case PROFILE:
-			UserProfile profileFragment = new UserProfile();
-			startMainFragment(profileFragment, true);
+			// UserProfile profileFragment = new UserProfile();
+			// startMainFragment(profileFragment, true);
+			Intent intent = new Intent(this, UserProfile.class);
+			startActivity(intent);
 			return true;
 		default:
 			return true;
@@ -569,18 +582,6 @@ public class MainActivity extends BaseActivity implements FragmentListener {
 
 		}
 		return false;
-	}
-
-	public void setViewAutoHide(ListView listView, View view) {
-		registerHideableHeaderView(view);
-		enableActionBarAutoHide(listView);
-		hideActionBar(false);
-	}
-
-	public void setActionbarAutoHide(ListView listView) {
-		Log.v(TAG, "setActionbarAutoHide");
-		enableActionBarAutoHide(listView);
-		hideActionBar(true);
 	}
 
 	/**
